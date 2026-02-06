@@ -20,3 +20,6 @@ RUN set -eux; \
     tar -xvzf histogram-quantile.tar.gz; \
     mv histogram-quantile /var/lib/clickhouse/user_scripts/histogramQuantile; \
     rm histogram-quantile.tar.gz
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD wget --no-verbose --tries=1 --spider http://localhost:8123/ping || exit 1

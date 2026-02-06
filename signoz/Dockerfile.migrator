@@ -1,0 +1,9 @@
+FROM signoz/signoz-schema-migrator:v0.129.13
+
+COPY --chmod=755 migrator-entrypoint.sh /migrator-entrypoint.sh
+
+# The migrator exits after completion, so healthcheck just verifies it can start
+HEALTHCHECK --interval=10s --timeout=5s --start-period=30s --retries=3 \
+    CMD exit 0
+
+ENTRYPOINT ["/migrator-entrypoint.sh"]
