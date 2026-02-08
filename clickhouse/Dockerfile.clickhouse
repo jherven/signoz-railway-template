@@ -6,6 +6,9 @@ COPY configs/custom-function.xml /etc/clickhouse-server/custom-function.xml
 COPY configs/user_scripts /var/lib/clickhouse/user_scripts/
 COPY configs/cluster.xml /etc/clickhouse-server/config.d/cluster.xml
 
+# Remove auto-generated password file that overrides our users.xml empty password
+RUN rm -f /etc/clickhouse-server/users.d/default-password.xml
+
 RUN mkdir -p /var/lib/clickhouse/user_scripts/ \
     && chown clickhouse:clickhouse /var/lib/clickhouse/user_scripts
 
