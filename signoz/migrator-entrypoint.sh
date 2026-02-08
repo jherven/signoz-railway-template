@@ -12,21 +12,18 @@ echo "ClickHouse Host: ${CLICKHOUSE_HOST}"
 echo "ClickHouse Port: ${CLICKHOUSE_PORT}"
 echo "Cluster Name: ${CLUSTER_NAME}"
 
-# Wait for ClickHouse to be ready (TCP port 9000)
-echo "Waiting for ClickHouse TCP port to be ready..."
-until nc -z "${CLICKHOUSE_HOST}" "${CLICKHOUSE_PORT}" 2>/dev/null; do
-  echo "ClickHouse at ${CLICKHOUSE_HOST}:${CLICKHOUSE_PORT} not ready, waiting 5s..."
+# Wait for ClickHouse HTTP API to be ready (nc -z unreliable on Railway)
+echo "Waiting for ClickHouse to be ready..."
+WAIT=0
+while [ $WAIT -lt 300 ]; do
+  if wget --spider -q "http://${CLICKHOUSE_HOST}:8123/ping" 2>/dev/null; then
+    echo "ClickHouse is ready! (after ${WAIT}s)"
+    break
+  fi
+  echo "ClickHouse at ${CLICKHOUSE_HOST}:8123 not ready, waiting 5s..."
   sleep 5
+  WAIT=$((WAIT + 5))
 done
-echo "ClickHouse TCP port is ready!"
-
-# Also check HTTP port for good measure
-echo "Waiting for ClickHouse HTTP port to be ready..."
-until wget --spider -q "http://${CLICKHOUSE_HOST}:8123/ping" 2>/dev/null; do
-  echo "ClickHouse HTTP at ${CLICKHOUSE_HOST}:8123 not ready, waiting 5s..."
-  sleep 5
-done
-echo "ClickHouse HTTP is ready!"
 
 # Give ClickHouse a moment to fully initialize
 sleep 5
@@ -49,7 +46,7 @@ MODE="${MIGRATION_MODE:-sync}"
 echo "Running ${MODE} migrations..."
 
 if [ "${MODE}" = "async" ]; then
-  /signoz-schema-migrator async --dsn="${DSN}" --cluster-name="${CLUSTER_NAME}" --replication=false --skip-duration-seconds=120
+  /signoz-schema-migrator async --dsn="${DSN}" --cluster-name="${CLUSTER_NAME}" --replication=false
 else
   /signoz-schema-migrator sync --dsn="${DSN}" --cluster-name="${CLUSTER_NAME}" --replication=false
 fi
