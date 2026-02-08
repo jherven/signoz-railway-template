@@ -1,5 +1,8 @@
 FROM signoz/signoz-schema-migrator:v0.129.13
 
+# Install bash for /dev/tcp health checks (base image is minimal)
+RUN apk add --no-cache bash 2>/dev/null || apt-get update && apt-get install -y bash 2>/dev/null || true
+
 COPY --chmod=755 migrator-entrypoint.sh /migrator-entrypoint.sh
 
 # The migrator exits after completion, so healthcheck just verifies it can start

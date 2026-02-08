@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 set -e
 
 echo "=== Schema Migrator Starting ==="
@@ -12,11 +12,11 @@ echo "ClickHouse Host: ${CLICKHOUSE_HOST}"
 echo "ClickHouse Port: ${CLICKHOUSE_PORT}"
 echo "Cluster Name: ${CLUSTER_NAME}"
 
-# Wait for ClickHouse HTTP API to be ready (nc -z unreliable on Railway)
+# Wait for ClickHouse to be ready using bash /dev/tcp (wget/nc unreliable on Railway)
 echo "Waiting for ClickHouse to be ready..."
 WAIT=0
 while [ $WAIT -lt 300 ]; do
-  if wget --spider -q "http://${CLICKHOUSE_HOST}:8123/ping" 2>/dev/null; then
+  if (echo > /dev/tcp/${CLICKHOUSE_HOST}/8123) 2>/dev/null; then
     echo "ClickHouse is ready! (after ${WAIT}s)"
     break
   fi
