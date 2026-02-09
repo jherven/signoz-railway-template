@@ -3,8 +3,12 @@ receivers:
     protocols:
       grpc:
         endpoint: 0.0.0.0:4317
+        auth:
+          authenticator: bearertokenauth
       http:
         endpoint: 0.0.0.0:4318
+        auth:
+          authenticator: bearertokenauth
   prometheus:
     config:
       global:
@@ -55,6 +59,8 @@ extensions:
     endpoint: 0.0.0.0:13133
   pprof:
     endpoint: 0.0.0.0:1777
+  bearertokenauth:
+    token: ${env:SIGNOZ_INGESTION_KEY}
 exporters:
   clickhousetraces:
     datasource: tcp://signoz-clickhouse.railway.internal:9000/signoz_traces
@@ -73,6 +79,7 @@ service:
   extensions:
     - health_check
     - pprof
+    - bearertokenauth
   pipelines:
     traces:
       receivers: [otlp]
